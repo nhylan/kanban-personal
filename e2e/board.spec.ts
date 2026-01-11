@@ -44,4 +44,24 @@ test.describe('Kanban Board', () => {
         await expect(doingColumn.getByText('Drag Me')).toBeVisible();
         await expect(toDoColumn.getByText('Drag Me')).not.toBeVisible();
     });
+
+    test('cards persist after reload', async ({ page }) => {
+        await page.goto('/');
+
+        const toDoColumn = page.locator('section').filter({ hasText: 'To Do' });
+        const addButton = toDoColumn.getByText('+ Add Card');
+
+        await addButton.click();
+        const input = toDoColumn.getByPlaceholder('Card title...');
+        await input.fill('Stay with me');
+        await page.keyboard.press('Enter');
+
+        await expect(toDoColumn.getByText('Stay with me')).toBeVisible();
+
+        // Reload the page
+        await page.reload();
+
+        // Verify the card is still there
+        await expect(page.getByText('Stay with me')).toBeVisible();
+    });
 });

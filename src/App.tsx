@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DndContext, useDraggable, useDroppable, DragEndEvent, PointerSensor, useSensor, useSensors, DragOverlay, DragStartEvent } from "@dnd-kit/core";
 import { moveCard, CardData } from "./logic/boardLogic";
+import { loadCards, saveCards } from "./logic/storage";
 import "./App.css";
 
 interface CardProps {
@@ -94,6 +95,20 @@ function App() {
   const columns = ["To Do", "Doing", "Done"];
   const [cards, setCards] = useState<CardData[]>([]);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    loadCards().then((loadedCards) => {
+      setCards(loadedCards);
+      setIsInitialized(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isInitialized) {
+      saveCards(cards);
+    }
+  }, [cards, isInitialized]);
 
   const sensors = useSensors(
     useSensor(PointerSensor)
