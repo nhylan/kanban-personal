@@ -22,6 +22,10 @@ jobs:
           cache: 'npm'
       - name: setup rust
         uses: dtolnay/rust-toolchain@stable
+      - name: rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
       - name: install dependencies
         run: npm install
       - name: build and release
