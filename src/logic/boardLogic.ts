@@ -11,3 +11,10 @@ export const moveCard = (cards: CardData[], activeId: string, overColumnTitle: s
             : card
     );
 };
+
+export const addColumn = (columns: string[], title: string): string[] => {
+    if (columns.includes(title)) {
+        return columns;
+    }
+    return [...columns, title];
+};

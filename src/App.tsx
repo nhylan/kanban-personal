@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DndContext, useDraggable, useDroppable, DragEndEvent, PointerSensor, useSensor, useSensors, DragOverlay, DragStartEvent } from "@dnd-kit/core";
-import { moveCard, CardData } from "./logic/boardLogic";
-import { loadCards, saveCards } from "./logic/storage";
+import { moveCard, CardData, addColumn } from "./logic/boardLogic.ts";
+import { loadBoard, saveBoard, BoardState } from "./logic/storage.ts";
 import "./App.css";
 
 interface CardProps {
@@ -92,23 +92,24 @@ function Column({ title, cards, onAddCard }: ColumnProps) {
 }
 
 function App() {
-  const columns = ["To Do", "Doing", "Done"];
-  const [cards, setCards] = useState<CardData[]>([]);
+  const [boardState, setBoardState] = useState<BoardState>({ columns: [], cards: [] });
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [newColumnTitle, setNewColumnTitle] = useState("");
 
   useEffect(() => {
-    loadCards().then((loadedCards) => {
-      setCards(loadedCards);
+    loadBoard().then((state) => {
+      setBoardState(state);
       setIsInitialized(true);
     });
   }, []);
 
   useEffect(() => {
     if (isInitialized) {
-      saveCards(cards);
+      saveBoard(boardState);
     }
-  }, [cards, isInitialized]);
+  }, [boardState, isInitialized]);
 
   const sensors = useSensors(
     useSensor(PointerSensor)
@@ -120,7 +121,22 @@ function App() {
       title,
       columnTitle,
     };
-    setCards([...cards, newCard]);
+    setBoardState(prev => ({
+      ...prev,
+      cards: [...prev.cards, newCard]
+    }));
+  };
+
+  const handleAddColumn = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newColumnTitle.trim()) {
+      setBoardState(prev => ({
+        ...prev,
+        columns: addColumn(prev.columns, newColumnTitle)
+      }));
+      setNewColumnTitle("");
+      setIsAddingColumn(false);
+    }
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -134,11 +150,14 @@ function App() {
     if (over) {
       const activeCardId = active.id as string;
       const overColumnTitle = over.id as string;
-      setCards((prevCards) => moveCard(prevCards, activeCardId, overColumnTitle));
+      setBoardState(prev => ({
+        ...prev,
+        cards: moveCard(prev.cards, activeCardId, overColumnTitle)
+      }));
     }
   };
 
-  const activeCard = cards.find((c) => c.id === activeCardId);
+  const activeCard = boardState.cards.find((c) => c.id === activeCardId);
 
   return (
     <DndContext
@@ -149,14 +168,33 @@ function App() {
       <main className="container">
         <h1>My Board</h1>
         <div className="board">
-          {columns.map((title) => (
+          {boardState.columns.map((title) => (
             <Column
               key={title}
               title={title}
-              cards={cards.filter((c) => c.columnTitle === title)}
+              cards={boardState.cards.filter((c) => c.columnTitle === title)}
               onAddCard={(cardTitle) => handleAddCard(title, cardTitle)}
             />
           ))}
+
+          <div className="column add-column-section">
+            {isAddingColumn ? (
+              <form onSubmit={handleAddColumn} className="add-card-form">
+                <input
+                  autoFocus
+                  className="card-input"
+                  placeholder="Column title..."
+                  value={newColumnTitle}
+                  onChange={(e) => setNewColumnTitle(e.target.value)}
+                  onBlur={() => !newColumnTitle && setIsAddingColumn(false)}
+                />
+              </form>
+            ) : (
+              <button className="add-column-btn" onClick={() => setIsAddingColumn(true)}>
+                + Add Column
+              </button>
+            )}
+          </div>
         </div>
       </main>
       <DragOverlay>

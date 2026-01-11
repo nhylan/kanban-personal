@@ -64,4 +64,17 @@ test.describe('Kanban Board', () => {
         // Verify the card is still there
         await expect(page.getByText('Stay with me')).toBeVisible();
     });
+
+    test('can add a new column', async ({ page }) => {
+        await page.goto('/');
+
+        const addColumnButton = page.getByRole('button', { name: '+ Add Column' });
+        await addColumnButton.click();
+
+        const input = page.getByPlaceholder('Column title...');
+        await input.fill('Backlog');
+        await page.keyboard.press('Enter');
+
+        await expect(page.getByRole('heading', { name: 'Backlog' })).toBeVisible();
+    });
 });

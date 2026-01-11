@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { moveCard, CardData } from './boardLogic';
+import { moveCard, CardData, addColumn } from './boardLogic.ts';
 
 describe('boardLogic', () => {
     it('should move a card to a new column', () => {
@@ -24,5 +24,17 @@ describe('boardLogic', () => {
         const newState = moveCard(initialState, 'non-existent', 'Doing');
 
         expect(newState).toEqual(initialState);
+    });
+
+    it('should add a new column', () => {
+        const initialColumns = ['To Do', 'Doing'];
+        const newColumns = addColumn(initialColumns, 'Done');
+        expect(newColumns).toEqual(['To Do', 'Doing', 'Done']);
+    });
+
+    it('should not add a duplicate column name', () => {
+        const initialColumns = ['To Do'];
+        const newColumns = addColumn(initialColumns, 'To Do');
+        expect(newColumns).toEqual(['To Do']);
     });
 });

@@ -16,6 +16,8 @@
   gap: 20px;
   flex: 1;
   overflow-x: auto;
+  padding-bottom: 20px;
+  /* Space for scrollbar */
 }
 
 .column {
@@ -50,7 +52,6 @@
   font-size: 0.95rem;
   transition: transform 0.1s, box-shadow 0.1s;
   touch-action: none;
-  /* Recommended for dnd-kit */
   user-select: none;
 }
 
@@ -101,6 +102,31 @@
   font-size: 0.95rem;
 }
 
+.add-column-section {
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  align-items: center;
+  min-width: 250px;
+}
+
+.add-column-btn {
+  background: none;
+  border: none;
+  color: #5e6c84;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.add-column-btn:hover {
+  background-color: rgba(9, 30, 66, 0.08);
+  color: #172b4d;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
@@ -122,6 +148,20 @@
   }
 
   .add-card-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+  }
+
+  .add-column-section {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .add-column-btn {
+    color: #b0b0b0;
+  }
+
+  .add-column-btn:hover {
     background-color: rgba(255, 255, 255, 0.08);
     color: #ffffff;
   }

@@ -1,21 +1,23 @@
-import { describe, it, expect, vi } from 'vitest';
-import { saveCards, loadCards } from './storage';
-import { CardData } from './boardLogic';
+import { describe, it, expect } from 'vitest';
+import { saveBoard, loadBoard, BoardState } from './storage.ts';
+import { CardData } from './boardLogic.ts';
 
 describe('storage', () => {
-    it('should load an empty array if no cards are stored', async () => {
-        const cards = await loadCards();
-        expect(cards).toEqual([]);
+    it('should load default state if nothing is stored', async () => {
+        const state = await loadBoard();
+        expect(state.columns).toEqual(['To Do', 'Doing', 'Done']);
+        expect(state.cards).toEqual([]);
     });
 
-    it('should save and then load cards', async () => {
-        const mockCards: CardData[] = [
-            { id: '1', title: 'Test', columnTitle: 'To Do' }
-        ];
+    it('should save and then load board state', async () => {
+        const mockState: BoardState = {
+            columns: ['Unique'],
+            cards: [{ id: '1', title: 'Test', columnTitle: 'Unique' }]
+        };
 
-        await saveCards(mockCards);
-        const loadedCards = await loadCards();
+        await saveBoard(mockState);
+        const loadedState = await loadBoard();
 
-        expect(loadedCards).toEqual(mockCards);
+        expect(loadedState).toEqual(mockState);
     });
 });
