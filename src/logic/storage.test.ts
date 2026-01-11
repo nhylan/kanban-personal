@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { saveBoard, loadBoard, BoardState } from './storage.ts';
-import { CardData } from './boardLogic.ts';
 
 describe('storage', () => {
     it('should load default state if nothing is stored', async () => {

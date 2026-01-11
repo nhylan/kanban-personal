@@ -1,95 +1,10 @@
 import { useState, useEffect } from "react";
-import { DndContext, useDraggable, useDroppable, DragEndEvent, PointerSensor, useSensor, useSensors, DragOverlay, DragStartEvent } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors, DragOverlay, DragStartEvent } from "@dnd-kit/core";
 import { moveCard, CardData, addColumn } from "./logic/boardLogic.ts";
 import { loadBoard, saveBoard, BoardState } from "./logic/storage.ts";
+import { Card } from "./components/Card.tsx";
+import { Column } from "./components/Column.tsx";
 import "./App.css";
-
-interface CardProps {
-  card: CardData;
-  isDragging?: boolean;
-  isOverlay?: boolean;
-}
-
-function Card({ card, isDragging, isOverlay }: CardProps) {
-  const classes = [
-    "card",
-    isDragging ? "dragging" : "",
-    isOverlay ? "overlay" : "",
-  ].filter(Boolean).join(" ");
-
-  return (
-    <div className={classes}>
-      {card.title}
-    </div>
-  );
-}
-
-interface DraggableCardProps {
-  card: CardData;
-}
-
-function DraggableCard({ card }: DraggableCardProps) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: card.id,
-  });
-
-  return (
-    <div ref={setNodeRef} {...listeners} {...attributes}>
-      <Card card={card} isDragging={isDragging} />
-    </div>
-  );
-}
-
-interface ColumnProps {
-  title: string;
-  cards: CardData[];
-  onAddCard: (title: string) => void;
-}
-
-function Column({ title, cards, onAddCard }: ColumnProps) {
-  const { setNodeRef } = useDroppable({
-    id: title,
-  });
-
-  const [isAdding, setIsAdding] = useState(false);
-  const [newCardTitle, setNewCardTitle] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newCardTitle.trim()) {
-      onAddCard(newCardTitle);
-      setNewCardTitle("");
-      setIsAdding(false);
-    }
-  };
-
-  return (
-    <section ref={setNodeRef} className="column">
-      <h2>{title}</h2>
-      <div className="card-list">
-        {cards.map((card) => (
-          <DraggableCard key={card.id} card={card} />
-        ))}
-      </div>
-      {isAdding ? (
-        <form onSubmit={handleSubmit} className="add-card-form">
-          <input
-            autoFocus
-            className="card-input"
-            placeholder="Card title..."
-            value={newCardTitle}
-            onChange={(e) => setNewCardTitle(e.target.value)}
-            onBlur={() => !newCardTitle && setIsAdding(false)}
-          />
-        </form>
-      ) : (
-        <button className="add-card-btn" onClick={() => setIsAdding(true)}>
-          + Add Card
-        </button>
-      )}
-    </section>
-  );
-}
 
 function App() {
   const [boardState, setBoardState] = useState<BoardState>({ columns: [], cards: [] });
