@@ -1,37 +1,40 @@
 import { useState } from "react";
-import { DndContext, useDraggable, useDroppable, DragEndEvent } from "@dnd-kit/core";
+import { DndContext, useDraggable, useDroppable, DragEndEvent, PointerSensor, useSensor, useSensors, DragOverlay, DragStartEvent } from "@dnd-kit/core";
+import { moveCard, CardData } from "./logic/boardLogic";
 import "./App.css";
-
-interface CardData {
-  id: string;
-  title: string;
-  columnTitle: string;
-}
 
 interface CardProps {
   card: CardData;
+  isDragging?: boolean;
+  isOverlay?: boolean;
 }
 
-function Card({ card }: CardProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+function Card({ card, isDragging, isOverlay }: CardProps) {
+  const classes = [
+    "card",
+    isDragging ? "dragging" : "",
+    isOverlay ? "overlay" : "",
+  ].filter(Boolean).join(" ");
+
+  return (
+    <div className={classes}>
+      {card.title}
+    </div>
+  );
+}
+
+interface DraggableCardProps {
+  card: CardData;
+}
+
+function DraggableCard({ card }: DraggableCardProps) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.id,
   });
 
-  const style = transform
-    ? {
-      transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-    }
-    : undefined;
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className="card"
-    >
-      {card.title}
+    <div ref={setNodeRef} {...listeners} {...attributes}>
+      <Card card={card} isDragging={isDragging} />
     </div>
   );
 }
@@ -64,7 +67,7 @@ function Column({ title, cards, onAddCard }: ColumnProps) {
       <h2>{title}</h2>
       <div className="card-list">
         {cards.map((card) => (
-          <Card key={card.id} card={card} />
+          <DraggableCard key={card.id} card={card} />
         ))}
       </div>
       {isAdding ? (
@@ -90,6 +93,11 @@ function Column({ title, cards, onAddCard }: ColumnProps) {
 function App() {
   const columns = ["To Do", "Doing", "Done"];
   const [cards, setCards] = useState<CardData[]>([]);
+  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor)
+  );
 
   const handleAddCard = (columnTitle: string, title: string) => {
     const newCard: CardData = {
@@ -100,25 +108,29 @@ function App() {
     setCards([...cards, newCard]);
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveCardId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveCardId(null);
 
-    if (over && active.id !== over.id) {
+    if (over) {
       const activeCardId = active.id as string;
       const overColumnTitle = over.id as string;
-
-      setCards((prevCards) =>
-        prevCards.map((card) =>
-          card.id === activeCardId
-            ? { ...card, columnTitle: overColumnTitle }
-            : card
-        )
-      );
+      setCards((prevCards) => moveCard(prevCards, activeCardId, overColumnTitle));
     }
   };
 
+  const activeCard = cards.find((c) => c.id === activeCardId);
+
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
       <main className="container">
         <h1>My Board</h1>
         <div className="board">
@@ -132,6 +144,9 @@ function App() {
           ))}
         </div>
       </main>
+      <DragOverlay>
+        {activeCard ? <Card card={activeCard} isOverlay /> : null}
+      </DragOverlay>
     </DndContext>
   );
 }
