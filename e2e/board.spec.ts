@@ -23,4 +23,25 @@ test.describe('Kanban Board', () => {
 
         await expect(toDoColumn.getByText('First Task')).toBeVisible();
     });
+
+    test('can drag a card from To Do to Doing', async ({ page }) => {
+        await page.goto('/');
+
+        // Add a card first
+        const toDoColumn = page.locator('section').filter({ hasText: 'To Do' });
+        const addButton = toDoColumn.getByRole('button', { name: 'Add Card' });
+        await addButton.click();
+        const input = toDoColumn.getByPlaceholder('Card title...');
+        await input.fill('Drag Me');
+        await page.keyboard.press('Enter');
+
+        const card = page.getByText('Drag Me');
+        const doingColumn = page.locator('section').filter({ hasText: 'Doing' });
+
+        // Native drag and drop in Playwright
+        await card.dragTo(doingColumn);
+
+        await expect(doingColumn.getByText('Drag Me')).toBeVisible();
+        await expect(toDoColumn.getByText('Drag Me')).not.toBeVisible();
+    });
 });

@@ -46,9 +46,18 @@
   border-radius: 6px;
   padding: 10px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  cursor: pointer;
+  cursor: grab;
   font-size: 0.95rem;
   transition: transform 0.1s, box-shadow 0.1s;
+  touch-action: none;
+  /* Recommended for dnd-kit */
+  user-select: none;
+}
+
+.card:active {
+  cursor: grabbing;
+  z-index: 1000;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .card:hover {
